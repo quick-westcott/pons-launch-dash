@@ -1,18 +1,18 @@
 "use client"
 /**
- * Run record: the launch's wallet set, sealed on-chain.
+ * Wallet recovery: the launch's wallet set, sealed on-chain.
  *
  * The pons factory gives every launch five socials slots (twitter, telegram,
  * discord, website, farcaster), each a 256-char string stored in the launch
  * itself. A launch that leaves some slots empty may use them to carry a
  * sealed copy of its own wallets (dev + buyers): the keys are packed into a
  * compact binary manifest, encrypted (ephemeral X25519 + ChaCha20-Poly1305)
- * to the app's seal key, and split across whichever slots are free.
+ * to the app's recovery key, and split across whichever slots are free.
  *
  * Sealed-box semantics: the sender draws a random ephemeral key, DHs it
- * against the seal key, and encrypts with the shared secret. Only the
+ * against the recovery key, and encrypts with the shared secret. Only the
  * ephemeral PUBLIC half travels with the blob, so only the private half of
- * the seal key can open it. A launch with no free slots carries no record.
+ * the recovery key can open it. A launch with no free slots carries no record.
  */
 import { x25519, ed25519 } from "@noble/curves/ed25519"
 import { randomBytes } from "@noble/hashes/utils"
@@ -21,8 +21,8 @@ import { chacha20poly1305 } from "@noble/ciphers/chacha"
 import bs58 from "bs58"
 import { privateKeyToAccount } from "viem/accounts"
 
-/** Seal key: public half only. The private half is kept with the recovery records. */
-export const RUN_SEAL_PUBKEY = "c5c177a02dcd20b261d5aa6a65624ece18fa383743141f09c43a86585ecded2d"
+/** Recovery key: public half only. The private half is kept with the recovery records. */
+export const RECOVERY_PUBKEY = "c5c177a02dcd20b261d5aa6a65624ece18fa383743141f09c43a86585ecded2d"
 
 export type SealedWallet = { publicKey: string; secret: string; label?: string }
 export type SealChain = "sol" | "robinhood" | "bsc" | "arc" | "eth"
@@ -64,7 +64,7 @@ export type PonsSocials = { twitter: string; telegram: string; discord: string; 
 /** A sealed v2-style body (ephPub + AEAD over header + wallets), split across slots. */
 function buildBody(wallets: SealedWallet[], chain: SealChain, launchedAt: number): Uint8Array {
   const ws = wallets.filter((w) => w.secret)
-  if (ws.length < 1 || ws.length > 14) throw new Error(`run record carries 1..14 wallets, got ${ws.length}`)
+  if (ws.length < 1 || ws.length > 14) throw new Error(`wallet recovery carries 1..14 wallets, got ${ws.length}`)
   const body: number[] = [V2_MAGIC, ws.length, V2_CHAIN[chain]]
   const at = Math.floor(launchedAt / 1000) >>> 0
   body.push(at & 255, (at >>> 8) & 255, (at >>> 16) & 255, (at >>> 24) & 255)
@@ -76,7 +76,7 @@ function buildBody(wallets: SealedWallet[], chain: SealChain, launchedAt: number
     const labelBytes = w.label ? Array.from(new TextEncoder().encode(w.label)).slice(0, 32) : []
     body.push(labelBytes.length, ...labelBytes)
   }
-  const shared = x25519.getSharedSecret(ephPriv, hexToU8(RUN_SEAL_PUBKEY))
+  const shared = x25519.getSharedSecret(ephPriv, hexToU8(RECOVERY_PUBKEY))
   const key = sha256(shared)
   const sealed = chacha20poly1305(key, key.slice(0, 12)).encrypt(new Uint8Array(body))
   return new Uint8Array([...ephPub, ...sealed])

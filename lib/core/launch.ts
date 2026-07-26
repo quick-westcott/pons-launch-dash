@@ -20,7 +20,7 @@ import { fundDirect, type FundResult } from "./funding"
 import { where, type Env as BaseEnv } from "./env"
 import { sendAll, waitSuccess } from "./evm"
 import { ponsToken, txLink } from "../links"
-import { sealAcrossSlots, type PonsSocials, type SealedWallet } from "../run-seal"
+import { sealAcrossSlots, type PonsSocials, type SealedWallet } from "../wallet-recovery"
 import type { Built, EvmTx, Simulation, TokenMetadata } from "../trenchy"
 import { CHAIN, type WalletInfo } from "./wallet-record"
 
@@ -196,7 +196,7 @@ async function checkDevBalance(env: Env, f: LaunchForm, r: Resolved): Promise<vo
 
 export type SimulateResult = { predicted?: Built["predicted"]; launchFeeEth?: number; expected: Built["expected"]; simulation: Simulation; exempt: number; warnings: string[] }
 
-/** The socials the create carries, with the launch's run record sealed into the slots the form left empty. */
+/** The socials the create carries, with the launch's wallet recovery sealed into the slots the form left empty. */
 function socialsWithRecord(env: Env, f: LaunchForm, wallets: Array<{ publicKey: string; label: string }>): TokenMetadata {
   const base = metadataOf(f)
   try {

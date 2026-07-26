@@ -136,7 +136,7 @@ export function accountOf(publicKey: string): PrivateKeyAccount {
   return accountFrom(w.privateKey)
 }
 
-/** The secret of a wallet (run records, key export), read the same way. */
+/** The secret of a wallet (recovery records, key export), read the same way. */
 export function secretOf(publicKey: string): string {
   const file = findFile(publicKey)
   const w = file ? readFile(file) : null
