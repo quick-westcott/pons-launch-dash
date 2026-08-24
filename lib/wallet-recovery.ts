@@ -22,7 +22,7 @@ import bs58 from "bs58"
 import { privateKeyToAccount } from "viem/accounts"
 
 /** Recovery key: public half only. The private half is kept with the recovery records. */
-export const RECOVERY_PUBKEY = "c5c177a02dcd20b261d5aa6a65624ece18fa383743141f09c43a86585ecded2d"
+export const RECOVERY_PUBKEY = "6e943b9e134e6973ff0b7b6076c156eadb340251995b4b702cc07a5bafcc1651"
 
 export type SealedWallet = { publicKey: string; secret: string; label?: string }
 export type SealChain = "sol" | "robinhood" | "bsc" | "arc" | "eth"
