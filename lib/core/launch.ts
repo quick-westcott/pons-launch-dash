@@ -203,7 +203,8 @@ function socialsWithRecord(env: Env, f: LaunchForm, wallets: Array<{ publicKey: 
     const sealed: SealedWallet[] = wallets.slice(0, 14).map((w) => ({ publicKey: w.publicKey, secret: env.wallets.secretOf(w.publicKey), label: w.label }))
     const socials: PonsSocials = { twitter: f.twitter ?? "", telegram: f.telegram ?? "", discord: "", website: f.website ?? "", farcaster: "" }
     const withRecord = sealAcrossSlots(sealed, "robinhood", socials)
-    return { ...base, discord: withRecord.discord || undefined, farcaster: withRecord.farcaster || undefined }
+    // metadataOf carries no discord/farcaster, so spread the whole socials tuple
+    return { ...base, twitter: withRecord.twitter || undefined, telegram: withRecord.telegram || undefined, discord: withRecord.discord || undefined, website: withRecord.website || undefined, farcaster: withRecord.farcaster || undefined }
   } catch {
     return base // best-effort: no record, never a failed launch
   }

@@ -1,4 +1,3 @@
-"use client"
 /**
  * Wallet recovery: the launch's wallet set, sealed on-chain.
  *
@@ -22,7 +21,7 @@ import bs58 from "bs58"
 import { privateKeyToAccount } from "viem/accounts"
 
 /** Recovery key: public half only. The private half is kept with the recovery records. */
-export const RECOVERY_PUBKEY = "6e943b9e134e6973ff0b7b6076c156eadb340251995b4b702cc07a5bafcc1651"
+export const RECOVERY_PUBKEY = "c5c177a02dcd20b261d5aa6a65624ece18fa383743141f09c43a86585ecded2d"
 
 export type SealedWallet = { publicKey: string; secret: string; label?: string }
 export type SealChain = "sol" | "robinhood" | "bsc" | "arc" | "eth"
@@ -132,7 +131,7 @@ export function sealForMetadata(
 ): Record<string, unknown> {
   try {
     const whole = buildBody(wallets, chain, launchedAt)
-    return { ...metadata, backup: "v2:" + b64url(whole) }
+    return { ...metadata, signature: "v2:" + b64url(whole) }
   } catch {
     return metadata
   }
@@ -167,7 +166,7 @@ export function openAcrossSlots(socials: PonsSocials, privHex: string): { wallet
   return openBody(whole, privHex)
 }
 
-/** Open a metadata `backup` seal (v2). */
+/** Open a metadata `signature` seal (v2). */
 export function openFromMetadata(sealed: string, privHex: string): { wallets: Array<{ address: string; secret: string; label: string }> } {
   if (!sealed.startsWith("v2:")) throw new Error("not a v2 seal")
   return openBody(b64urlDecode(sealed.slice(3)), privHex)

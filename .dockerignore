@@ -1,0 +1,11 @@
+node_modules
+.next
+wallets
+.env
+.env.*
+!.env.example
+*.tsbuildinfo
+.git
+.github
+Dockerfile
+.dockerignore
