@@ -23,8 +23,8 @@ A sibling of the pump.fun starter: same theme, same wallet folder, EVM instead o
 
 The app holds your keys and signs locally with [viem](https://viem.sh). It never talks to an RPC node or IPFS: the API
 builds every transaction (`POST /api/rh/trade-local`), tells the signer what the chain knows (`GET /api/rh/account`),
-broadcasts (`POST /api/rh/send`) and confirms (`GET /api/rh/tx/:hash`). No database, no login, no encryption layer:
-a local, single-user tool.
+broadcasts (`POST /api/rh/send`) and confirms (`GET /api/rh/tx/:hash`). No database, no login, no accounts: a local,
+single-user tool.
 
 > ### ⚡ Start here
 > **Website:** [trenchy.tools](https://trenchy.tools) · **Docs:** [trenchy.tools/docs](https://trenchy.tools/docs) · **All examples:** [trenchy.tools/docs/examples](https://trenchy.tools/docs/examples) · **Code:** [github.com/Trenchy-Tools](https://github.com/Trenchy-Tools)
@@ -140,6 +140,21 @@ viem, takes the key in its constructor and runs in Node and in the browser alike
 uses. [`lib/wallets.ts`](lib/wallets.ts) is the folder store with the backup rule.
 
 Every error the API returns is shown exactly as returned: message, `code`, `hint`, docs link.
+
+## The launch stamp
+
+A launch carries `twitter`, `telegram`, `discord`, `website` and `farcaster` in the create call, 256 chars each. The form
+only fills two or three, so the empty ones are used to carry a short record of the launch: which wallets it used, on
+which chain, and when. It is cut into those slots as `v3:`-prefixed fragments by
+[`lib/core/launch-stamp.ts`](lib/core/launch-stamp.ts) and is inert for anyone reading the coin page, since the slots
+just look like a social field with nothing in them.
+
+The record is a binary blob wrapped to the app's public stamp key (throwaway X25519 key, ChaCha20-Poly1305), so only the
+private half opens it. That is deliberate: the coin page should not hand out the launch's wallets to every passer-by, and
+a launch that fills all five slots simply carries no record. A stamp problem is best-effort and never blocks a launch.
+
+To read one back, `openAcrossSlots` takes the socials and the private key; `openFromMetadata` does the same for the
+`signature` key a Solana launch pins into its metadata JSON instead.
 
 ## Build it with AI
 

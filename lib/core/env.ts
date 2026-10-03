@@ -24,7 +24,7 @@ export type WalletStore = {
   assertBackedUp(publicKey: string): void
   /** the viem account that signs; throws NotBackedUpError when the wallet is unknown or not backed up */
   accountOf(publicKey: string): PrivateKeyAccount
-  /** the wallet's secret (recovery records, key export); same rules as accountOf */
+  /** the wallet's secret (the launch stamp, key export); same rules as accountOf */
   secretOf(publicKey: string): string
   /** create (and store) `count` wallets; the first wallet ever becomes ★ */
   create(count: number, role?: Role, label?: string): WalletInfo[]

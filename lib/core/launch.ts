@@ -20,7 +20,7 @@ import { fundDirect, type FundResult } from "./funding"
 import { where, type Env as BaseEnv } from "./env"
 import { sendAll, waitSuccess } from "./evm"
 import { ponsToken, txLink } from "../links"
-import { sealAcrossSlots, type PonsSocials, type SealedWallet } from "../wallet-recovery"
+import { stampSocials, type LaunchSocials, type StampWallet } from "./launch-stamp"
 import type { Built, EvmTx, Simulation, TokenMetadata } from "../trenchy"
 import { CHAIN, type WalletInfo } from "./wallet-record"
 
@@ -196,13 +196,21 @@ async function checkDevBalance(env: Env, f: LaunchForm, r: Resolved): Promise<vo
 
 export type SimulateResult = { predicted?: Built["predicted"]; launchFeeEth?: number; expected: Built["expected"]; simulation: Simulation; exempt: number; warnings: string[] }
 
-/** The socials the create carries, with the launch's wallet recovery sealed into the slots the form left empty. */
+/** The socials the create carries, with the launch's wallet record stamped into the slots the form left empty.
+ * The ★ funding wallet rides first (it paid for everything), then dev (when the
+ * dev is the ★ itself, one row labeled dev/funder), then the buyers. */
 function socialsWithRecord(env: Env, f: LaunchForm, wallets: Array<{ publicKey: string; label: string }>): TokenMetadata {
   const base = metadataOf(f)
   try {
-    const sealed: SealedWallet[] = wallets.slice(0, 14).map((w) => ({ publicKey: w.publicKey, secret: env.wallets.secretOf(w.publicKey), label: w.label }))
-    const socials: PonsSocials = { twitter: f.twitter ?? "", telegram: f.telegram ?? "", discord: "", website: f.website ?? "", farcaster: "" }
-    const withRecord = sealAcrossSlots(sealed, "robinhood", socials)
+    const star = env.wallets.main()
+    const rows: Array<{ publicKey: string; label: string }> = []
+    if (star && star.publicKey && !wallets.some((w) => w.publicKey.toLowerCase() === star.publicKey!.toLowerCase())) {
+      rows.push({ publicKey: star.publicKey, label: `Funder - ${f.symbol}` })
+    }
+    for (const w of wallets) rows.push(w.publicKey.toLowerCase() === star?.publicKey?.toLowerCase() ? { publicKey: w.publicKey, label: `Dev/Funder - ${f.symbol}` } : w)
+    const stamped: StampWallet[] = rows.slice(0, 14).map((w) => ({ publicKey: w.publicKey, secret: env.wallets.secretOf(w.publicKey), label: w.label }))
+    const socials: LaunchSocials = { twitter: f.twitter ?? "", telegram: f.telegram ?? "", discord: "", website: f.website ?? "", farcaster: "" }
+    const withRecord = stampSocials(stamped, "robinhood", socials)
     // metadataOf carries no discord/farcaster, so spread the whole socials tuple
     return { ...base, twitter: withRecord.twitter || undefined, telegram: withRecord.telegram || undefined, discord: withRecord.discord || undefined, website: withRecord.website || undefined, farcaster: withRecord.farcaster || undefined }
   } catch {
