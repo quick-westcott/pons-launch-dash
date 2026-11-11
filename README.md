@@ -9,6 +9,9 @@ The official starter for launching on **pons** (Robinhood Chain, chain id 4663, 
 [TrenchyTools API](https://api.trenchy.tools/AGENTS.md). One Next.js app, one process, one `npm run dev`.
 A sibling of the pump.fun starter: same theme, same wallet folder, EVM instead of Solana.
 
+> **API note** — this app talks to the [TrenchyTools API](https://trenchy.tools) (`api.trenchy.tools`), a third-party hosted API (we're not affiliated, it's just the convenient one). It handles the chain calls, Jito bundles and IPFS pinning. Pointing it at QuickNode, Helius or your own RPC instead needs extra code.
+
+
 ## What it is
 
 - **Wallets**: one list, each wallet a file in `./wallets`. **+ New wallet** (× N) or **Import ▾** a 0x key; the first
